@@ -1,0 +1,55 @@
+// frontend/src/api/users.ts
+
+import { api } from "../api";
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string; // admin / user
+  createdAt?: string;
+}
+
+export interface CreateUserDTO {
+  name: string;
+  email: string;
+  password: string;
+  role?: string;
+}
+
+export interface UpdateUserDTO {
+  name?: string;
+  email?: string;
+  password?: string;
+  role?: string;
+}
+
+// 🔹 Lista todos os usuários
+export async function getUsers() {
+  const response = await api.get<User[]>("/users");
+  return response.data;
+}
+
+// 🔹 Busca usuário por ID
+export async function getUserById(id: string) {
+  const response = await api.get<User>(`/users/${id}`);
+  return response.data;
+}
+
+// 🔹 Cria novo usuário
+export async function createUser(data: CreateUserDTO) {
+  const response = await api.post<User>("/users", data);
+  return response.data;
+}
+
+// 🔹 Atualiza usuário existente
+export async function updateUser(id: string, data: UpdateUserDTO) {
+  const response = await api.patch<User>(`/users/${id}`, data);
+  return response.data;
+}
+
+// 🔹 Remove usuário
+export async function deleteUser(id: string) {
+  const response = await api.delete(`/users/${id}`);
+  return response.data;
+}

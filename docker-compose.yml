@@ -1,0 +1,81 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6
+    container_name: gdash-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: gdash
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: gdash-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672" # management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gdash-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+      - rabbitmq
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/gdash
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - PORT=3000
+      - JWT_SECRET=change_me
+      - GEMINI_API_KEY=AIzaSyBOwWU1H3HfH9Gf5iB8Mwm3UrvCPUrUdWg
+
+  worker:
+    build:
+      context: ./worker
+    container_name: gdash-worker
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+      - backend
+    environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      BACKEND_URL: "http://backend:3000"
+
+  collector:
+    build:
+      context: ./collector
+      dockerfile: Dockerfile
+    container_name: gdash-collector
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - LATITUDE=-5.17833
+      - LONGITUDE=-40.6775
+      - INTERVAL_MINUTES=1
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: gdash-frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5173:5173"
+  #   depends_on:
+  #     - backend
+
+volumes:
+  mongo_data:
