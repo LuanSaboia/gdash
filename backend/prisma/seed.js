@@ -1,10 +1,23 @@
 // prisma/seed.js
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
+const path = require("path");
 
-const prisma = new PrismaClient();
+// Carrega o .env explicitamente
+const envPath = path.resolve(__dirname, "../.env");
+require("dotenv").config({ path: envPath });
+
+// Com engineType="library", podemos usar 'datasources' para forçar a URL
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 
 async function main() {
+  console.log("Conectando ao MongoDB...");
   const email = "admin@gdash.com";
 
   const existing = await prisma.user.findUnique({
@@ -12,7 +25,7 @@ async function main() {
   });
 
   if (existing) {
-    console.log("Admin já existe:", email);
+    console.log("⚠️ Admin já existe:", email);
     return;
   }
 
@@ -27,9 +40,14 @@ async function main() {
     },
   });
 
-  console.log("Admin criado com sucesso:", email);
+  console.log("🚀 Admin criado com sucesso:", email);
 }
 
 main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+  .catch((e) => {
+    console.error("❌ Erro:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
