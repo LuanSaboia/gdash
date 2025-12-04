@@ -3,13 +3,21 @@
 import { useEffect, useState } from "react";
 import { getUsers, type User } from "../lib/api/users";
 import { Button } from "../components/ui/button"
+import { CreateUserModal } from "../components/users/CreateUserModal";
 
 import { Loader2 } from "lucide-react";
+import { EditUserModal } from "../components/users/EditUserModal";
+import { DeleteUserModal } from "../components/users/DeleteUserModal";
 
 export function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [openDelete, setOpenDelete] = useState(false);
+
 
   // 🔹 carrega usuários ao entrar na página
   async function loadUsers() {
@@ -73,29 +81,60 @@ export function UsersPage() {
                   <td className="px-4 py-2">{user.email}</td>
                   <td className="px-4 py-2 capitalize">{user.role}</td>
                   <td className="px-4 py-2 flex gap-2">
+                    <Button onClick={() => setOpenCreate(true)}>
+                      Novo Usuário
+                    </Button>
+
                     <Button
-                      size="sm"
                       variant="outline"
-                      onClick={() => {}}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setOpenEdit(true);
+                      }}
                     >
                       Editar
                     </Button>
 
                     <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => {}}
-                    >
-                      Excluir
-                    </Button>
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setOpenDelete(true);
+                    }}
+                  >
+                    Excluir
+                  </Button>
+
                   </td>
                 </tr>
+                
               ))}
             </tbody>
 
           </table>
         </div>
       )}
+      <CreateUserModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreated={loadUsers}
+      />
+      <EditUserModal
+        open={openEdit}
+        onClose={() => setOpenEdit(false)}
+        user={selectedUser}
+        onUpdated={loadUsers}
+      />
+      <DeleteUserModal
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        user={selectedUser}
+        onDeleted={loadUsers}
+      />
+
+
     </div>
   );
 }
