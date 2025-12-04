@@ -1,15 +1,10 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Weather, WeatherSchema } from './weather.schema';
 import { WeatherService } from './weather.service';
 import { WeatherController } from './weather.controller';
-import { InsightsModule } from '../insights/insights.module'; // 👈 importar aqui
+import { PrismaModule } from '../prisma/prisma.module'; // Importa o Prisma
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Weather.name, schema: WeatherSchema }]),
-    InsightsModule, // 👈 adicionar aqui
-  ],
+  imports: [PrismaModule], // <--- Apenas o Prisma, nada de MongooseModule
   controllers: [WeatherController],
   providers: [WeatherService],
 })

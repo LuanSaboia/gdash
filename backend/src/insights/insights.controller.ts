@@ -1,17 +1,19 @@
-import { Controller, Get, Post, Body } from "@nestjs/common";
-import { InsightsService } from "./insights.service";
+import { Controller, Get, Post } from '@nestjs/common';
+import { InsightsService } from './insights.service';
 
-@Controller("api/insights")
+@Controller('api/insights')
 export class InsightsController {
-  constructor(private service: InsightsService) {}
+  constructor(private readonly insightsService: InsightsService) {}
 
+  // Rota para o Frontend buscar o histórico: GET /api/insights
   @Get()
-  async list() {
-    return this.service.list();
+  async getInsights() {
+    return this.insightsService.list();
   }
 
-  @Post()
-  async create(@Body() data: any) {
-    return this.service.generate(data);
+  // Rota para forçar a geração de um novo insight: POST /api/insights/generate
+  @Post('generate')
+  async generateInsight() {
+    return this.insightsService.generate();
   }
 }

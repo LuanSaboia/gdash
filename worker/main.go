@@ -3,174 +3,112 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type WeatherMessage struct {
-	FetchedAt string      `json:"fetched_at"`
-	Latitude  string      `json:"latitude"`
-	Longitude string      `json:"longitude"`
-	Current   interface{} `json:"current_weather"`
-	Hourly    interface{} `json:"hourly"`
+// Essa estrutura TEM que bater com o que o Python envia e o NestJS espera
+type WeatherLog struct {
+	City        string  `json:"city"`
+	Temperature float64 `json:"temperature"`
+	Humidity    float64 `json:"humidity"`
+	WindSpeed   float64 `json:"windSpeed"`
+	Condition   string  `json:"condition"`
+}
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
 }
 
 func main() {
-	rabbitURL := os.Getenv("RABBITMQ_URL")
-	backendURL := os.Getenv("BACKEND_URL")
+	// Pega URLs das variáveis de ambiente do Docker
+	rabbitMQURL := os.Getenv("RABBITMQ_URL")
+	apiURL := os.Getenv("BACKEND_URL") + "/api/weather/logs"
 
-	if backendURL == "" {
-		backendURL = "http://backend:3000"
+	// Retry de conexão com o RabbitMQ (espera ele subir)
+	var conn *amqp.Connection
+	var err error
+	for i := 0; i < 15; i++ { // Tenta por 30 segundos
+		conn, err = amqp.Dial(rabbitMQURL)
+		if err == nil {
+			log.Println("✅ Conectado ao RabbitMQ!")
+			break
+		}
+		log.Printf("⏳ Aguardando RabbitMQ... (%d/15)", i+1)
+		time.Sleep(2 * time.Second)
 	}
-
-	conn, err := amqp.Dial(rabbitURL)
-	if err != nil {
-		log.Fatalf("Erro ao conectar no RabbitMQ: %v", err)
-	}
+	failOnError(err, "Falha ao conectar no RabbitMQ após várias tentativas")
 	defer conn.Close()
 
 	ch, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("Erro ao abrir canal: %v", err)
-	}
+	failOnError(err, "Falha ao abrir canal")
 	defer ch.Close()
 
-	msgs, err := ch.Consume(
-		"weather_queue",
-		"",
-		false, // ack manual
-		false,
-		false,
-		false,
-		nil,
+	// Garante que a fila existe (Idempotente)
+	q, err := ch.QueueDeclare(
+		"weather_queue", // nome
+		true,            // durable
+		false,           // delete when unused
+		false,           // exclusive
+		false,           // no-wait
+		nil,             // arguments
 	)
-	if err != nil {
-		log.Fatalf("Erro ao consumir: %v", err)
-	}
+	failOnError(err, "Falha ao declarar fila")
 
-	log.Println("Worker aguardando mensagens...")
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		false,  // auto-ack (vamos dar ack manual)
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	failOnError(err, "Falha ao registrar consumidor")
 
-	for msg := range msgs {
+	forever := make(chan struct{})
 
-		var payload WeatherMessage
-		err := json.Unmarshal(msg.Body, &payload)
-		if err != nil {
-			log.Println("Falha ao decodificar JSON:", err)
-			msg.Nack(false, true)
-			continue
+	go func() {
+		for d := range msgs {
+			log.Printf("📥 Recebido da Fila: %s", d.Body)
+
+			var weatherData WeatherLog
+			// Tenta transformar o JSON da mensagem na struct do Go
+			err := json.Unmarshal(d.Body, &weatherData)
+			if err != nil {
+				log.Printf("❌ Erro de JSON (ignorando mensagem): %v", err)
+				d.Nack(false, false) // Rejeita e descarta (não requeue)
+				continue
+			}
+
+			// Prepara para enviar ao NestJS
+			jsonData, _ := json.Marshal(weatherData)
+			resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(jsonData))
+			
+			if err != nil {
+				log.Printf("⚠️ Erro de Rede ao contatar API: %v", err)
+				d.Nack(false, true) // Devolve para a fila tentar depois
+				time.Sleep(5 * time.Second) // Espera um pouco antes de pegar de novo
+				continue
+			}
+            defer resp.Body.Close()
+
+			if resp.StatusCode == 201 {
+				log.Printf("🚀 Sucesso! Enviado para API NestJS: %s", weatherData.City)
+				d.Ack(false) // Confirma sucesso para a fila
+			} else {
+				log.Printf("⚠️ API recusou (Status %d). Devolvendo para fila.", resp.StatusCode)
+				d.Nack(false, true) // Devolve para fila
+			}
 		}
+	}()
 
-		log.Println("Mensagem recebida:", payload.FetchedAt)
-
-		// Envia ao backend (weather logs)
-		err = sendToBackend(backendURL, payload)
-		if err != nil {
-			log.Println("Erro ao enviar ao backend:", err)
-			msg.Nack(false, true)
-			continue
-		}
-
-		// Envia insight automático
-		if err := sendInsightToBackend(backendURL, payload); err != nil {
-			log.Println("Erro ao enviar insight automático:", err)
-		}
-
-		// OK → confirmar
-		msg.Ack(false)
-	}
-}
-
-/*=============================================
-=          ENVIO DO DADO AO BACKEND           =
-=============================================*/
-
-func sendToBackend(base string, data WeatherMessage) error {
-	jsonData, _ := json.Marshal(data)
-	url := base + "/api/weather"
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	if resp.StatusCode >= 300 {
-		return fmt.Errorf("backend retornou código %d: %s", resp.StatusCode, string(body))
-	}
-
-	log.Println("Enviado ao backend com sucesso!")
-	return nil
-}
-
-/*=============================================
-=     ENVIO DE INSIGHT AUTOMÁTICO (NOVO)     =
-=============================================*/
-
-func sendInsightToBackend(base string, weather WeatherMessage) error {
-	body := map[string]interface{}{
-		"weather": weather,
-		"summary": fmt.Sprintf(
-			"Insight automático: temperatura atual %.1f°C.",
-			extractTemperature(weather),
-		),
-		"generated_by_ai": false,
-	}
-
-	jsonData, _ := json.Marshal(body)
-	url := base + "/api/insights"
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	responseBody, _ := ioutil.ReadAll(resp.Body)
-
-	if resp.StatusCode >= 300 {
-		return fmt.Errorf("erro ao enviar insight: %s", string(responseBody))
-	}
-
-	log.Println("Insight automático enviado com sucesso!")
-	return nil
-}
-
-/*=============================================
-=       AUXILIAR: EXTRAI TEMPERATURA         =
-=============================================*/
-
-func extractTemperature(w WeatherMessage) float64 {
-	// current_weather vem como interface{}, precisamos converter
-	current, ok := w.Current.(map[string]interface{})
-	if !ok {
-		return 0.0
-	}
-
-	// pega campo temperature, sempre float64
-	if temp, ok := current["temperature"].(float64); ok {
-		return temp
-	}
-
-	return 0.0
+	log.Printf(" [*] Worker Go rodando e aguardando mensagens...")
+	<-forever
 }

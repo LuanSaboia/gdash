@@ -1,42 +1,21 @@
-import { Controller, Post, Body, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { WeatherService } from './weather.service';
-import { Response } from 'express';
+import { CreateWeatherLogDto } from './dto/create-weather-log.dto';
 
-@Controller('api/weather')
+@Controller('api/weather') // Prefixo da rota
 export class WeatherController {
   constructor(private readonly weatherService: WeatherService) {}
 
-  @Post()
-  async create(@Body() data: any) {
-    return this.weatherService.create(data);
+  // ROTA 1: Recebe dados do Worker (POST http://localhost:3000/api/weather/logs)
+  @Post('logs')
+  async createLog(@Body() createWeatherLogDto: CreateWeatherLogDto) {
+    console.log('Recebido do Worker:', createWeatherLogDto); // Log para debug
+    return this.weatherService.create(createWeatherLogDto);
   }
 
-  // 🔥 Listagem paginada (frontend)
-  @Get()
-  async list(
-    @Query("limit") limit = 20,
-    @Query("skip") skip = 0
-  ) {
-    return this.weatherService.findPaginated(Number(limit), Number(skip));
+  // ROTA 2: Envia dados para o Frontend (GET http://localhost:3000/api/weather/logs)
+  @Get('logs')
+  async getLogs() {
+    return this.weatherService.findAll();
   }
-
-  // 🔥 Exportação CSV
-  @Get("export")
-  async exportCsv(@Res() res) {
-    const csv = await this.weatherService.exportCSV();
-
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=weather-history.csv"
-    );
-
-    res.send(csv);
-  }
-
-  @Get("last-24h")
-  async last24h() {
-    return this.weatherService.getLast24Hours();
-  }
-
 }

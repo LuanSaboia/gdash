@@ -1,15 +1,11 @@
-import { Module } from "@nestjs/common";
-import { MongooseModule } from "@nestjs/mongoose";
-import { Insight, InsightSchema } from "./insight.schema";
-import { InsightsService } from "./insights.service";
-import { InsightsController } from "./insights.controller";
+import { Module } from '@nestjs/common';
+import { InsightsService } from './insights.service';
+import { InsightsController } from './insights.controller';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Insight.name, schema: InsightSchema }]),
-  ],
+  imports: [PrismaModule], // Conecta com o Prisma
   controllers: [InsightsController],
   providers: [InsightsService],
-  exports: [InsightsService],
 })
 export class InsightsModule {}
