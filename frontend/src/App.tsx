@@ -10,8 +10,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={ <ProtectedLayout><HomePage /> </ProtectedLayout>} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/insights" element={ <ProtectedLayout><InsightsPage /> </ProtectedLayout>} />
         <Route path="/users" element={ <ProtectedLayout><UsersPage /> </ProtectedLayout>} />
         <Route path="/explore" element={<ExplorePage />} />

@@ -1,7 +1,7 @@
 generator client {
   provider      = "prisma-client-js"
   engineType    = "library"
-  binaryTargets = ["native", "linux-musl"] // <--- ADICIONE ESTA LINHA
+  binaryTargets = ["native", "linux-musl"]
 }
 
 datasource db {
@@ -25,7 +25,7 @@ model WeatherLog {
   temperature Float
   humidity    Float
   windSpeed   Float
-  condition   String   // Ex: "Ensolarado", "Chuvoso"
+  condition   String   
   createdAt   DateTime @default(now())
 }
 
@@ -33,5 +33,4 @@ model Insight {
   id        String   @id @map("_id") @default(auto()) @db.ObjectId
   date      DateTime @default(now())
   summary   String
-  // Você pode adicionar outros campos se quiser, ex: 'recommendation'
 }

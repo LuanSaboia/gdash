@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { Button } from "./ui/button";
 
-// Interface para tipar os dados novos do Backend
 interface WeatherLog {
   id: string;
   city: string;
@@ -17,7 +16,6 @@ export default function WeatherList() {
   const [data, setData] = useState<WeatherLog[]>([]);
 
   useEffect(() => {
-    // CORREÇÃO 1: A rota correta no Controller é /logs
     api.get("/api/weather/logs") 
       .then(res => setData(res.data))
       .catch(err => console.error("Erro ao buscar clima:", err));
@@ -26,10 +24,10 @@ export default function WeatherList() {
   const handleExport = async () => {
     try {
       const response = await api.get('/api/weather/export/csv', { 
-        responseType: 'blob' // Importante: diz pro axios que é um arquivo
+        responseType: 'blob' // diz pro axios que é um arquivo
       });
       
-      // Cria um link temporário para forçar o download no navegador
+      // cria link temporario para o download
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -48,7 +46,6 @@ export default function WeatherList() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Últimos Registros ({data.length})</h2>
         
-        {/* BOTÃO DE EXPORTAÇÃO */}
         <Button onClick={handleExport} variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
           📥 Exportar CSV
         </Button>

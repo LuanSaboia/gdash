@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { WeatherService } from './weather.service';
 import { WeatherController } from './weather.controller';
-import { PrismaModule } from '../prisma/prisma.module'; // Importa o Prisma
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule], // <--- Apenas o Prisma, nada de MongooseModule
+  imports: [PrismaModule],
   controllers: [WeatherController],
   providers: [WeatherService],
 })

@@ -9,12 +9,10 @@ export class ExplorerController {
     const limit = 20;
     const offset = (Number(page) - 1) * limit;
 
-    // Chama a API pública
     const response = await axios.get(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
     
     // Formata os dados para o Frontend
     const results = response.data.results.map((p: any) => {
-      // Extrai o ID da URL (ex: https://pokeapi.co/api/v2/pokemon/1/)
       const parts = p.url.split('/');
       const id = parts[parts.length - 2];
       return {
@@ -39,8 +37,8 @@ export class ExplorerController {
       return {
         id: data.id,
         name: data.name,
-        height: data.height / 10, // Converter para metros
-        weight: data.weight / 10, // Converter para kg
+        height: data.height / 10,
+        weight: data.weight / 10,
         types: data.types.map((t: any) => t.type.name),
         abilities: data.abilities.map((a: any) => a.ability.name),
         stats: data.stats.map((s: any) => ({

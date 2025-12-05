@@ -1,18 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GoogleGenAI } from '@google/genai'; // <--- Importação correta da lib nova
+import { GoogleGenAI } from '@google/genai';
 
 @Injectable()
 export class InsightsService {
   private ai: GoogleGenAI;
 
   constructor(private prisma: PrismaService) {
-    // Inicializa com a chave do .env (igual ao seu snippet)
     this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   }
 
   async generate() {
-    // 1. Busca os últimos 5 registros de clima para dar contexto
     const logs = await this.prisma.weatherLog.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
@@ -24,7 +22,6 @@ export class InsightsService {
 
     const latest = logs[0];
     
-    // 2. Monta o prompt
     const prompt = `
       Você é um assistente meteorológico objetivo.
       Dados de ${latest.city}:
@@ -45,36 +42,33 @@ export class InsightsService {
     `;
 
     try {
-      // 3. Chamada correta usando a sintaxe do SDK @google/genai
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash', // Usando o 1.5 Flash que é estável e rápido
-        contents: prompt, // O SDK novo aceita string direta aqui
+        model: 'gemini-2.5-flash', // Usando o 2.5 Flash que é estável e rápido
+        contents: prompt,
       });
 
-      // A propriedade .text contém a resposta (conforme seu snippet e documentação nova)
       const text = response.text; 
       
       if (!text) {
         throw new Error("Resposta vazia da IA");
       }
 
-      // 4. Salva no banco
       return this.prisma.insight.create({
         data: {
-          summary: text, // Salva o texto limpo
+          summary: text,
           date: new Date(),
         },
       });
 
     } catch (error: any) {
-        console.error('Erro detalhado da IA:', error); // Mantém log no terminal
+        console.error('Erro detalhado da IA:', error);
         
-        // TRUQUE: Salva o erro técnico no resumo para vermos no Frontend
         const errorMessage = error?.message || JSON.stringify(error);
         
+        // Mensagem de erro no card para tratar problemas
         return this.prisma.insight.create({
           data: {
-            summary: `FALHA: ${errorMessage}`, // <--- Isso vai aparecer no card
+            summary: `FALHA: ${errorMessage}`,
             date: new Date(),
           },
         });

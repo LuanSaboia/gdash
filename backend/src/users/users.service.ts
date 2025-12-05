@@ -8,7 +8,6 @@ import * as bcrypt from 'bcryptjs';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  // Criar usuário (com hash de senha)
   async create(data: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(data.password!, 10);
     
@@ -22,7 +21,6 @@ export class UsersService {
     });
   }
 
-  // Listar todos (removendo a senha do retorno por segurança)
   async findAll() {
     return this.prisma.user.findMany({
       select: {
@@ -35,19 +33,16 @@ export class UsersService {
     });
   }
 
-  // Buscar um
   async findOne(id: string) {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  // Atualizar
   async update(id: string, data: UpdateUserDto) {
     const updateData: any = { ...data };
 
-    // Se mandou senha nova, hasheia ela
     if (data.password) {
       updateData.passwordHash = await bcrypt.hash(data.password, 10);
-      delete updateData.password; // Remove o campo 'password' cru
+      delete updateData.password;
     }
 
     return this.prisma.user.update({
@@ -56,7 +51,6 @@ export class UsersService {
     });
   }
 
-  // Deletar
   async remove(id: string) {
     return this.prisma.user.delete({ where: { id } });
   }

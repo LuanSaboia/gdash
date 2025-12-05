@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // Certifique-se que o caminho está certo
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateWeatherLogDto } from './dto/create-weather-log.dto';
 
 @Injectable()
 export class WeatherService {
   constructor(private prisma: PrismaService) {}
 
-  // 1. Método para criar um log (chamado pelo Worker Go)
   async create(data: CreateWeatherLogDto) {
     return this.prisma.weatherLog.create({
       data: {
@@ -19,9 +18,8 @@ export class WeatherService {
     });
   }
 
-  // 2. Método para listar todos (chamado pelo Frontend)
   async findAll() {
-    // Retorna os últimos 100 registros, ordenados do mais recente pro mais antigo
+    // Retorna os últimos 100 registros do mais recente pro mais antigo
     return this.prisma.weatherLog.findMany({
       orderBy: {
         createdAt: 'desc',
@@ -30,7 +28,6 @@ export class WeatherService {
     });
   }
 
-  // NOVO MÉTODO: Gera o CSV
   async generateCsv() {
     const logs = await this.prisma.weatherLog.findMany({
       orderBy: { createdAt: 'desc' }, // Pega do mais recente pro mais antigo

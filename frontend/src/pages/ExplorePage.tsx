@@ -9,7 +9,6 @@ import {
   DialogDescription,
 } from "../components/ui/dialog";
 
-// Tipagem do Pokémon Detalhado
 interface PokemonDetail {
   id: number;
   name: string;
@@ -26,12 +25,10 @@ export default function ExplorePage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Estados do Modal
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [details, setDetails] = useState<PokemonDetail | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
 
-  // Carregar Lista
   async function loadList(p: number) {
     setLoading(true);
     try {
@@ -44,10 +41,9 @@ export default function ExplorePage() {
     }
   }
 
-  // Carregar Detalhes (Quando clica no card)
   async function loadDetails(id: string) {
     setLoadingDetails(true);
-    setDetails(null); // Limpa anterior
+    setDetails(null);
     try {
       const res = await api.get(`/api/explorer/pokemons/${id}`);
       setDetails(res.data);
@@ -62,7 +58,6 @@ export default function ExplorePage() {
     loadList(page);
   }, [page]);
 
-  // Efeito para buscar detalhes quando um ID é selecionado
   useEffect(() => {
     if (selectedId) {
       loadDetails(selectedId);
@@ -122,7 +117,6 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* --- MODAL DE DETALHES --- */}
       <Dialog open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
         <DialogContent className="sm:max-w-md">
           

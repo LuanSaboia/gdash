@@ -1,5 +1,3 @@
-// frontend/src/components/users/EditUserModal.tsx
-
 import {
   Dialog,
   DialogContent,
@@ -19,8 +17,8 @@ import { toast } from "sonner";
 interface Props {
   open: boolean;
   onClose: () => void;
-  user: User | null; // usuário selecionado
-  onUpdated: () => void; // recarrega lista
+  user: User | null;
+  onUpdated: () => void;
 }
 
 export function EditUserModal({ open, onClose, user, onUpdated }: Props) {
@@ -33,7 +31,6 @@ export function EditUserModal({ open, onClose, user, onUpdated }: Props) {
 
   const [loading, setLoading] = useState(false);
 
-  // carregar dados quando abrir modal
   useEffect(() => {
     if (user) {
       setForm({

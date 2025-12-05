@@ -1,5 +1,3 @@
-// frontend/src/components/users/DeleteUserModal.tsx
-
 import {
   Dialog,
   DialogContent,

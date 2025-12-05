@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import WeatherList from "../components/WeatherList"; // <--- 1. Importe o componente
+import WeatherList from "../components/WeatherList";
 import {
   LineChart,
   Line,
@@ -11,7 +11,6 @@ import {
   CartesianGrid,
 } from "recharts";
 
-// Tipos para o gráfico
 type ChartData = {
   time: string;
   temperature: number;
@@ -50,7 +49,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8"> {/* Aumentei o espaçamento vertical */}
+    <div className="p-6 max-w-5xl mx-auto space-y-8">
       <h1 className="text-3xl font-bold text-gray-800">Painel de Clima</h1>
 
       <div className="bg-white p-6 rounded-lg shadow-md border">

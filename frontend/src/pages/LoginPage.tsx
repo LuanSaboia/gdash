@@ -25,35 +25,28 @@ export default function LoginPage() {
 
       const res = await login(form);
 
-      // 🛡️ CORREÇÃO CRUCIAL: 
-      // Se não veio resposta ou não tem token, lançamos erro manual
-      // para pular direto pro catch e não salvar "undefined".
       if (!res || !res.token) {
         throw new Error("Resposta de login inválida (sem token).");
       }
 
-      // Se chegou aqui, temos um token válido
       localStorage.setItem("token", res.token);
       
-      // (Opcional) Salvar dados do usuário se o backend mandar
       if (res.user) {
         localStorage.setItem("user", JSON.stringify(res.user));
       }
 
       toast.success("Login realizado!");
 
-      // redirecionar após login
       navigate("/");
 
     } catch (error: any) {
-      // 🔥 SEGURANÇA: Se deu erro, garante que limpamos qualquer token podre
+      
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
       alert("Credenciais inválidas ou erro no servidor.")
       console.error("Erro no login:", error);
 
-      // Exibe mensagem amigável
       toast.error(
         error?.response?.data?.message || "Credenciais inválidas ou erro no servidor."
       );

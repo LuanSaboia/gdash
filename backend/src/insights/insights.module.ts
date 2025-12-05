@@ -4,7 +4,7 @@ import { InsightsController } from './insights.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule], // Conecta com o Prisma
+  imports: [PrismaModule],
   controllers: [InsightsController],
   providers: [InsightsService],
 })

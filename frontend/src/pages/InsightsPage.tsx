@@ -1,13 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { api } from "../lib/api";
-import { Button } from "../components/ui/button"; // Usando botão bonito se tiver
-import { toast } from "sonner"; // Para feedback visual
+import { Button } from "../components/ui/button";
+import { toast } from "sonner";
 
-// 1. Tipagem correta igual ao que vem do Backend (Prisma)
 type Insight = {
-  id: string;        // Prisma retorna 'id'
-  summary: string;   // Backend envia 'summary'
-  date: string;      // Backend envia 'date'
+  id: string;
+  summary: string;
+  date: string;
 };
 
 function copyToClipboard(text: string) {
@@ -27,11 +26,10 @@ export default function InsightsPage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
 
-  // Busca a lista de insights
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // O backend retorna um array direto
+
       const res = await api.get<Insight[]>("/api/insights");
       setInsights(res.data);
     } catch (err) {
@@ -41,19 +39,16 @@ export default function InsightsPage() {
     }
   }, []);
 
-  // Chama ao carregar a página
   useEffect(() => {
     load();
   }, [load]);
 
-  // Função para pedir para a IA gerar um novo
   async function handleGenerateAI() {
     setGenerating(true);
     try {
-      // Chama a rota correta do Controller
       await api.post("/api/insights/generate");
       toast.success("IA gerou um novo insight!");
-      await load(); // Recarrega a lista para mostrar o novo
+      await load();
     } catch (err) {
       console.error("Erro ao gerar:", err);
       toast.error("Erro ao conectar com a IA.");
@@ -91,7 +86,6 @@ export default function InsightsPage() {
         </div>
       </header>
 
-      {/* Lista de Cards */}
       <section className="space-y-4">
         {loading && insights.length === 0 && (
           <p className="text-center text-gray-500 py-10">Carregando análises...</p>

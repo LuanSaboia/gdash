@@ -1,5 +1,3 @@
-// frontend/src/components/users/CreateUserModal.tsx
-
 import {
   Dialog,
   DialogContent,
@@ -18,7 +16,7 @@ import { toast } from "sonner";
 interface Props {
   open: boolean;
   onClose: () => void;
-  onCreated: () => void; // recarrega lista na página principal
+  onCreated: () => void;
 }
 
 type CreateUserDTO = {
@@ -46,8 +44,8 @@ export function CreateUserModal({ open, onClose, onCreated }: Props) {
 
       toast.success("Usuário criado com sucesso!");
 
-      onCreated(); // recarrega lista
-      onClose();   // fecha modal
+      onCreated();
+      onClose();
       setForm({ name: "", email: "", password: "", role: "user" });
 
     } catch (error: any) {
