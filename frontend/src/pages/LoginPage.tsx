@@ -31,7 +31,7 @@ export default function LoginPage() {
       toast.success("Login realizado!");
 
       // redirecionar após login
-      navigate("/users");
+      navigate("/");
 
     } catch (error: any) {
       toast.error(
