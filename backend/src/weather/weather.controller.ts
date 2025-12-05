@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Header } from '@nestjs/common';
 import { WeatherService } from './weather.service';
 import { CreateWeatherLogDto } from './dto/create-weather-log.dto';
 
@@ -17,5 +17,12 @@ export class WeatherController {
   @Get('logs')
   async getLogs() {
     return this.weatherService.findAll();
+  }
+
+  @Get('export/csv')
+  @Header('Content-Type', 'text/csv')
+  @Header('Content-Disposition', 'attachment; filename="dados_clima.csv"')
+  async exportCsv() {
+    return this.weatherService.generateCsv();
   }
 }

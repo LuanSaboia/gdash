@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import WeatherList from "../components/WeatherList"; // <--- 1. Importe o componente
 import {
   LineChart,
   Line,
@@ -10,28 +11,38 @@ import {
   CartesianGrid,
 } from "recharts";
 
-type WeatherPoint = {
+// Tipos para o gráfico
+type ChartData = {
   time: string;
-  temperature: number | null;
+  temperature: number;
+};
+
+type ApiLog = {
+  createdAt: string;
+  temperature: number;
 };
 
 export default function Home() {
-  const [data, setData] = useState<WeatherPoint[]>([]);
+  const [data, setData] = useState<ChartData[]>([]);
 
   async function load() {
-  const res = await api.get<WeatherPoint[]>("/api/weather/last-24h");
-
-  setData(
-    res.data.map((p) => ({
-      time: new Date(p.time).toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      temperature: p.temperature,
-    }))
-  );
-}
-
+    try {
+      const res = await api.get<ApiLog[]>("/api/weather/logs");
+      
+      const formattedData = res.data.map((p) => ({
+        time: new Date(p.createdAt).toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        temperature: p.temperature,
+      }));
+      
+      // Inverte para o gráfico (cronológico)
+      setData(formattedData.reverse());
+    } catch (error) {
+      console.error("Erro ao carregar gráfico:", error);
+    }
+  }
 
   useEffect(() => {
     load();
@@ -40,29 +51,45 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Painel de Clima</h1>
+    <div className="p-6 max-w-5xl mx-auto space-y-8"> {/* Aumentei o espaçamento vertical */}
+      <h1 className="text-3xl font-bold text-gray-800">Painel de Clima</h1>
 
-      <div className="bg-white p-6 rounded shadow">
-        <h2 className="text-xl font-semibold mb-4">
-          Temperatura — Últimas 24h
+      {/* SEÇÃO 1: GRÁFICO */}
+      <div className="bg-white p-6 rounded-lg shadow-md border">
+        <h2 className="text-xl font-semibold mb-6 text-gray-700">
+          Temperatura em Tempo Real
         </h2>
-
-        <ResponsiveContainer width="100%" height={350}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" />
-            <YAxis unit="°C" />
-            <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="temperature"
-              stroke="#2563eb" // azul do tailwind
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="h-[350px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+              <XAxis 
+                dataKey="time" 
+                tick={{ fontSize: 12 }}
+                interval="preserveStartEnd"
+              />
+              <YAxis 
+                unit="°C" 
+                domain={['auto', 'auto']}
+                tick={{ fontSize: 12 }}
+              />
+              <Tooltip 
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="temperature"
+                stroke="#2563eb"
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
+
+      {/* SEÇÃO 2: TABELA E EXPORTAÇÃO (Aqui está ele!) */}
+      <WeatherList />
+      
     </div>
   );
 }

@@ -3,8 +3,7 @@
 import { api } from "../api";
 
 export interface User {
-  id(id: any, arg1: { name: string; email: string; role: string; password: string | undefined; }): unknown;
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role: string; // admin / user

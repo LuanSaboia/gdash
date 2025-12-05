@@ -1,31 +1,81 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { Button } from "./ui/button";
+
+// Interface para tipar os dados novos do Backend
+interface WeatherLog {
+  id: string;
+  city: string;
+  temperature: number;
+  humidity: number;
+  windSpeed: number;
+  condition: string;
+  createdAt: string;
+}
 
 export default function WeatherList() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<WeatherLog[]>([]);
 
   useEffect(() => {
-    api.get("/api/weather")
+    // CORREÇÃO 1: A rota correta no Controller é /logs
+    api.get("/api/weather/logs") 
       .then(res => setData(res.data))
-      .catch(err => console.error(err));
+      .catch(err => console.error("Erro ao buscar clima:", err));
   }, []);
+
+  const handleExport = async () => {
+    try {
+      const response = await api.get('/api/weather/export/csv', { 
+        responseType: 'blob' // Importante: diz pro axios que é um arquivo
+      });
+      
+      // Cria um link temporário para forçar o download no navegador
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'relatorio_clima.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Erro ao exportar CSV", error);
+      alert("Erro ao baixar o arquivo.");
+    }
+  };
 
   return (
     <div className="mt-4 p-4 bg-white shadow rounded">
-      <h2 className="text-xl font-semibold mb-4">Últimos Registros</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Últimos Registros ({data.length})</h2>
+        
+        {/* BOTÃO DE EXPORTAÇÃO */}
+        <Button onClick={handleExport} variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
+          📥 Exportar CSV
+        </Button>
+      </div>
 
       {data.length === 0 && (
-        <p className="text-gray-500">Nenhum dado encontrado.</p>
+        <p className="text-gray-500">Nenhum dado encontrado ou carregando...</p>
       )}
 
       <ul className="space-y-2">
         {data.map((item) => (
-          <li key={item._id} className="border p-3 rounded">
-            <p><strong>Horário:</strong> {item.fetched_at}</p>
-            <p><strong>Temperatura:</strong> {item.current_weather?.temperature}°C</p>
-            <p><strong>Umidade:</strong> {item.current_weather?.relativehumidity_2m ?? "—"}%</p>
-            <p><strong>Umidade:</strong> {item.current_weather?.humidity ?? "—"}%</p>
-
+          <li key={item.id} className="border p-3 rounded flex justify-between items-center">
+            <div>
+              <p className="font-bold text-lg">{item.city}</p>
+              <p className="text-sm text-gray-500">
+                {new Date(item.createdAt).toLocaleString('pt-BR')}
+              </p>
+            </div>
+            
+            <div className="text-right">
+              <p className="text-xl font-bold">{item.temperature}°C</p>
+              <p className="text-sm">{item.condition}</p>
+              <div className="text-xs text-gray-600 flex gap-2 mt-1">
+                <span>💧 {item.humidity}%</span>
+                <span>💨 {item.windSpeed} km/h</span>
+              </div>
+            </div>
           </li>
         ))}
       </ul>

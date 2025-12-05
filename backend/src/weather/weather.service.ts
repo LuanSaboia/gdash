@@ -29,4 +29,21 @@ export class WeatherService {
       take: 100,
     });
   }
+
+  // NOVO MÉTODO: Gera o CSV
+  async generateCsv() {
+    const logs = await this.prisma.weatherLog.findMany({
+      orderBy: { createdAt: 'desc' }, // Pega do mais recente pro mais antigo
+    });
+
+    // Cabeçalho do CSV
+    const header = 'Cidade,Temperatura,Umidade,Vento,Condicao,Data\n';
+
+    // Linhas do CSV
+    const rows = logs.map((log) => 
+      `${log.city},${log.temperature},${log.humidity},${log.windSpeed},${log.condition},${log.createdAt.toISOString()}`
+    ).join('\n');
+
+    return header + rows;
+  }
 }

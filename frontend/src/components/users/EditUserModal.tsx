@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription
 } from "../../components/ui/dialog";
 
 import { Button } from "../../components/ui/button";
@@ -48,7 +49,7 @@ export function EditUserModal({ open, onClose, user, onUpdated }: Props) {
     try {
       setLoading(true);
 
-      await updateUser(user!._id, {
+      await updateUser(user!.id, {
         name: form.name,
         email: form.email,
         role: form.role,
@@ -72,6 +73,9 @@ export function EditUserModal({ open, onClose, user, onUpdated }: Props) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Usuário</DialogTitle>
+          <DialogDescription>
+            Faça as alterações necessárias nos dados do usuário abaixo.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">

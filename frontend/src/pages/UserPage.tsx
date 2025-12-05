@@ -44,7 +44,7 @@ export function UsersPage() {
         <h1 className="text-2xl font-bold">Usuários</h1>
 
         {/* Botão para abrir modal de criação */}
-        <Button onClick={() => {}}>
+        <Button onClick={() => setOpenCreate(true)}>
           Novo Usuário
         </Button>
       </div>
@@ -76,14 +76,14 @@ export function UsersPage() {
 
             <tbody>
               {users.map((user) => (
-                <tr key={user._id} className="border-b">
+                <tr key={user.id} className="border-b">
                   <td className="px-4 py-2">{user.name}</td>
                   <td className="px-4 py-2">{user.email}</td>
                   <td className="px-4 py-2 capitalize">{user.role}</td>
                   <td className="px-4 py-2 flex gap-2">
-                    <Button onClick={() => setOpenCreate(true)}>
+                    {/* <Button onClick={() => setOpenCreate(true)}>
                       Novo Usuário
-                    </Button>
+                    </Button> */}
 
                     <Button
                       variant="outline"

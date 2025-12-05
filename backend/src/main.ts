@@ -7,7 +7,9 @@ async function bootstrap() {
   // Habilita CORS para o Frontend acessar
   app.enableCors({
     origin: "*", 
-    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   // O NestJS já carrega as rotas automaticamente pelos Módulos (AppModule -> AuthModule)

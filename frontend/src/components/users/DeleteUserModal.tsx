@@ -29,7 +29,7 @@ export function DeleteUserModal({ open, onClose, user, onDeleted }: Props) {
     try {
       setLoading(true);
 
-      await deleteUser(user._id);
+      await deleteUser(user.id);
 
       toast.success("Usuário excluído com sucesso!");
 
