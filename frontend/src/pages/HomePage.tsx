@@ -37,7 +37,6 @@ export default function Home() {
         temperature: p.temperature,
       }));
       
-      // Inverte para o gráfico (cronológico)
       setData(formattedData.reverse());
     } catch (error) {
       console.error("Erro ao carregar gráfico:", error);
@@ -54,7 +53,6 @@ export default function Home() {
     <div className="p-6 max-w-5xl mx-auto space-y-8"> {/* Aumentei o espaçamento vertical */}
       <h1 className="text-3xl font-bold text-gray-800">Painel de Clima</h1>
 
-      {/* SEÇÃO 1: GRÁFICO */}
       <div className="bg-white p-6 rounded-lg shadow-md border">
         <h2 className="text-xl font-semibold mb-6 text-gray-700">
           Temperatura em Tempo Real
@@ -87,7 +85,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* SEÇÃO 2: TABELA E EXPORTAÇÃO (Aqui está ele!) */}
       <WeatherList />
       
     </div>

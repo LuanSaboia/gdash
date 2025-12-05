@@ -4,6 +4,7 @@ import InsightsPage from "./pages/InsightsPage";
 import { ProtectedLayout } from "./components/ProtectedLayout";
 import LoginPage from "./pages/LoginPage";
 import { UsersPage } from "./pages/UserPage";
+import ExplorePage from "./pages/ExplorePage";
 
 function App() {
   return (
@@ -13,11 +14,8 @@ function App() {
         <Route path="/" element={ <ProtectedLayout><HomePage /> </ProtectedLayout>} />
         <Route path="/insights" element={ <ProtectedLayout><InsightsPage /> </ProtectedLayout>} />
         <Route path="/users" element={ <ProtectedLayout><UsersPage /> </ProtectedLayout>} />
-        <Route></Route>
+        <Route path="/explore" element={<ExplorePage />} />
       </Routes>
-      {/* <a href="/history" className="text-blue-600 underline">
-        Ver histórico completo →
-      </a> */}
 
     </BrowserRouter>
     

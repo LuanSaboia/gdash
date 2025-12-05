@@ -26,22 +26,28 @@ export class InsightsService {
     
     // 2. Monta o prompt
     const prompt = `
-      Atue como um meteorologista assistente.
-      Analise estes dados da cidade de ${latest.city}:
-      - Temperatura: ${latest.temperature}°C
+      Você é um assistente meteorológico objetivo.
+      Dados de ${latest.city}:
+      - Temp: ${latest.temperature}°C
       - Umidade: ${latest.humidity}%
       - Vento: ${latest.windSpeed} km/h
       - Condição: ${latest.condition}
       
       Histórico recente: ${logs.map(l => `${l.temperature}°C`).join(', ')}.
       
-      Gere uma frase curta e útil para o cidadão (ex: "Leve guarda-chuva" ou "Hidrate-se bem").
+      REGRA DE RESPOSTA:
+      - Responda em APENAS 2 frases curtas e diretas.
+      - NÃO use listas, tópicos ou negrito (**).
+      - Frase 1: Resumo da situação atual (ex: "Calor intenso com umidade crítica").
+      - Frase 2: Recomendação prática (ex: "Evite o sol e beba água").
+      
+      Exemplo ideal: "A temperatura está muito alta e o ar seco. Hidrate-se constantemente e evite atividades ao ar livre."
     `;
 
     try {
       // 3. Chamada correta usando a sintaxe do SDK @google/genai
       const response = await this.ai.models.generateContent({
-        model: 'gemini-1.5-flash', // Usando o 1.5 Flash que é estável e rápido
+        model: 'gemini-2.5-flash', // Usando o 1.5 Flash que é estável e rápido
         contents: prompt, // O SDK novo aceita string direta aqui
       });
 

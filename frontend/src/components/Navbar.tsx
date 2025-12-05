@@ -11,25 +11,31 @@ export function Navbar() {
   return (
     <nav className="w-full bg-white border-b shadow-sm p-4 flex justify-between items-center">
       <div className="flex gap-6">
-        <Link className="text-sm font-medium hover:text-blue-600" to="/dashboard">
+        <Link className="text-sm font-medium hover:text-blue-600" to="/">
           Dashboard
         </Link>
 
-        <Link className="text-sm font-medium hover:text-blue-600" to="/users">
-          Usuários
+        <Link className="text-sm font-medium hover:text-blue-600" to="/explore">
+          Explorar
         </Link>
 
-        <Link className="text-sm font-medium hover:text-blue-600" to="/explorar">
-          Explorar
+        <Link className="text-sm font-medium hover:text-blue-600" to="/insights">
+          Insights da IA
         </Link>
       </div>
 
-      <button
-        onClick={handleLogout}
-        className="text-sm bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
-      >
-        Sair
-      </button>
+      <div className="flex gap-6">
+        <Link className="text-sm font-medium hover:text-blue-600" to="/users">
+            Usuários
+        </Link>
+
+        <button
+          onClick={handleLogout}
+          className="text-sm bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
+        >
+          Sair
+        </button>
+      </div>
     </nav>
   );
 }

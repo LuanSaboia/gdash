@@ -39,7 +39,7 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - PORT=3000
       - JWT_SECRET=change_me
-      - GEMINI_API_KEY=AIzaSyBOwWU1H3HfH9Gf5iB8Mwm3UrvCPUrUdWg
+      - GEMINI_API_KEY=AIzaSyDurkTEBxB0zPXtNBmQA-y-Az_7lxVdhwM
 
   worker:
     build:
