@@ -19,12 +19,12 @@ export class WeatherService {
   }
 
   async findAll() {
-    // Retorna os últimos 100 registros do mais recente pro mais antigo
+    // Retorna os últimos 5 registros do mais recente pro mais antigo
     return this.prisma.weatherLog.findMany({
       orderBy: {
         createdAt: 'desc',
       },
-      take: 100,
+      take: 5,
     });
   }
 

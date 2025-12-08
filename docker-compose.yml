@@ -39,7 +39,7 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - PORT=3000
       - JWT_SECRET=change_me
-      - GEMINI_API_KEY=AIzaSyDurkTEBxB0zPXtNBmQA-y-Az_7lxVdhwM
+      - GEMINI_API_KEY=AIzaSyC0g4ZVgHCEh5BGdf7RA0n65nSMc9C22Cc
 
   worker:
     build:
@@ -65,7 +65,7 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - LATITUDE=-5.17833
       - LONGITUDE=-40.6775
-      - INTERVAL_MINUTES=1
+      - INTERVAL_MINUTES=60
 
   # frontend:
   #   build:
